@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 ##################################################
 # GNU Radio Python Flow Graph
-# Title: Fsk
-# Generated: Wed Oct 23 06:01:17 2019
+# Title: Tpms Fsk
+# Generated: Wed Oct 23 07:31:08 2019
 ##################################################
 
 
@@ -18,17 +18,17 @@ from optparse import OptionParser
 import pmt
 
 
-class fsk(gr.top_block):
+class tpms_fsk(gr.top_block):
 
-    def __init__(self, read_file='', write_file='', frequency_shift=0):
-        gr.top_block.__init__(self, "Fsk")
+    def __init__(self, frequency_shift=0, read_file='', write_file=''):
+        gr.top_block.__init__(self, "Tpms Fsk")
 
         ##################################################
         # Parameters
         ##################################################
+        self.frequency_shift = frequency_shift
         self.read_file = read_file
         self.write_file = write_file
-        self.frequency_shift = frequency_shift
 
         ##################################################
         # Variables
@@ -84,6 +84,12 @@ class fsk(gr.top_block):
         self.connect((self.blocks_uchar_to_float_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.blocks_complex_to_float_0, 0))
 
+    def get_frequency_shift(self):
+        return self.frequency_shift
+
+    def set_frequency_shift(self, frequency_shift):
+        self.frequency_shift = frequency_shift
+
     def get_read_file(self):
         return self.read_file
 
@@ -97,12 +103,6 @@ class fsk(gr.top_block):
     def set_write_file(self, write_file):
         self.write_file = write_file
         self.blocks_file_sink_0_0.open(self.write_file)
-
-    def get_frequency_shift(self):
-        return self.frequency_shift
-
-    def set_frequency_shift(self, frequency_shift):
-        self.frequency_shift = frequency_shift
 
     def get_samp_rate(self):
         return self.samp_rate
@@ -151,22 +151,22 @@ class fsk(gr.top_block):
 def argument_parser():
     parser = OptionParser(usage="%prog: [options]", option_class=eng_option)
     parser.add_option(
+        "-s", "--frequency-shift", dest="frequency_shift", type="intx", default=0,
+        help="Set Frequency Shift [default=%default]")
+    parser.add_option(
         "-r", "--read-file", dest="read_file", type="string", default='',
         help="Set Symbol file [default=%default]")
     parser.add_option(
         "-w", "--write-file", dest="write_file", type="string", default='',
         help="Set cu8 file [default=%default]")
-    parser.add_option(
-        "-s", "--frequency-shift", dest="frequency_shift", type="intx", default=0,
-        help="Set Frequency Shift [default=%default]")
     return parser
 
 
-def main(top_block_cls=fsk, options=None):
+def main(top_block_cls=tpms_fsk, options=None):
     if options is None:
         options, _ = argument_parser().parse_args()
 
-    tb = top_block_cls(read_file=options.read_file, write_file=options.write_file, frequency_shift=options.frequency_shift)
+    tb = top_block_cls(frequency_shift=options.frequency_shift, read_file=options.read_file, write_file=options.write_file)
     tb.start()
     tb.wait()
 

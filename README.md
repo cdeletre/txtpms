@@ -34,19 +34,23 @@ Use the scripts available in `tpms` to generate the symbol file
 
 _Example:_
 
-	toyota.py -i cafebabe -s 128 -p 40 -t 25
+	tpms_toyota.py -i cafebabe -s 128 -p 40 -t 25
 
-It will create `cafebabe_128_40.0_25_tpms_toyota_manch_20k.u8` that contains the symbols for Toyota TPMS sensor.
+It will create `cafebabe_128_40.0_25_tpms_toyota_manch_20k.u8` that contains the symbols for Toyota TPMS sensor.  It will also display the calculated raw payload and its corresponding differential manchester coding:
+
+	payload = cafebabede2080430c
+	differential manchester = _1_1_1_1__1111__11_1_1__1_11_1__11__11__11__1_11_1__11__1_11_1__1_11__11__11_1__11_1__11__11_1_1_1__1_1_1_1_1_11_1_1_1_1_1_1_1_1__1_1_1_1_11__1_1_1_1_11__1_1_111
+
 
 #### generate the IQ record
 
-Use `fsk.py` tool to generate the IQ record of the FSK modulated signal.
+Use `tpms_fsk.py` tool to generate the IQ record of the FSK modulated signal.
 
 _Example:_
 
-	fsk.py -r cafebabe_128_40.0_25_tpms_toyota_manch_20k.u8 -w cafebabe_128_40.0_25_tpms_toyota_250k.cu8
+	tpms_fsk.py -r cafebabe_128_40.0_25_tpms_toyota_manch_20k.u8 -w cafebabe_128_40.0_25_tpms_toyota_250k.cu8
 
-It will create `cafebabe_128_40.0_25_tpms_toyota_250k.cu8` that contains the FSK signal (25kHz deviation, 20kbauds)
+It will create `cafebabe_128_40.0_25_tpms_toyota_250k.cu8` that contains the FSK signal (25 kHz deviation, 20 kbauds).
 
 #### test with rtl\_433
 

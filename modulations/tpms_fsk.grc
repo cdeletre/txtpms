@@ -46,7 +46,7 @@
     </param>
     <param>
       <key>id</key>
-      <value>fsk</value>
+      <value>tpms_fsk</value>
     </param>
     <param>
       <key>max_nouts</key>
