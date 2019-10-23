@@ -9,6 +9,11 @@ LOW = HIGH ^ HIGH
 
 def crc8(message,nBytes,polynomial=0x07,init=0x00):
 
+  """
+  Port of C crc8 function from rtl_433 util
+  https://github.com/merbanan/rtl_433/blob/master/src/util.c
+  """
+
   remainder = init
   
   for byte in range(nBytes):
