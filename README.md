@@ -61,3 +61,11 @@ It should output the following decoding:
 	time      : @1.000000s
 	model     : Toyota       type      : TPMS          id        : cafebabe
 	status    : 128          pressure_PSI: 40.000      temperature_C: 25.000     mic       : CRC
+
+#### analyze the generated signal
+
+The signal can be analyzed with [**inspectrum**](https://github.com/miek/inspectrum):
+
+	inspectrum simu_tpms.cu8
+
+![inspectrum](https://raw.githubusercontent.com/cdeletre/txtpms/master/pics/inspectrum.png)
