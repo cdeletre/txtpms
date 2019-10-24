@@ -2,13 +2,14 @@
 
 ![txtpms_logo](https://raw.githubusercontent.com/cdeletre/txtpms/master/pics/txtpms_logo.png)
 
-txtpms is a set of tools to generate IQ records that simulate TPMS sensors. The implementation is inspired from the tpms device source code available in [**rtl_433**](https://github.com/merbanan/rtl_433).
+**txtpms** is a set of tools to generate IQ records that simulate TPMS sensors. The implementation is inspired from the tpms device source code available in [**rtl_433**](https://github.com/merbanan/rtl_433).
 
 ### supported sensors
 
-At the moment only one sensor is supported:
+At the moment two sensors are supported:
 
- - Toyota TPMS sensors: FSK 9-byte Differential Manchester encoded TPMS data with CRC-8. Pacific Industries Co.Ltd. PMV-C210 (`rtl_433/src/devices/tpms_toyota.c`)
+ - **Toyota** FSK 9-byte Differential Manchester encoded TPMS data with CRC-8. Pacific Industries Co.Ltd. PMV-C210 (`rtl_433/src/devices/tpms_toyota.c`)
+ - **Citroen** FSK 10 byte Manchester encoded checksummed TPMS data. Also Peugeot and likely Fiat, Mitsubishi, VDO-types (`rtl_433/src/devices/tpms_citroen.c`)
 
 ### installation
 
@@ -19,8 +20,8 @@ The tools can be downloaded from Github:
 Then it's needed to update your PATH:
 
 	cd txtpms
-	echo 'export PATH="$PATH:'`pwd`'/modulations:'`pwd`'/tpms"' >> ~/.bashrc
-	export PATH="$PATH:`pwd`/modulations:`pwd`/tpms"
+	echo 'export PATH="$PATH:'`pwd`'/modulations:'`pwd`'/devices"' >> ~/.bashrc
+	export PATH="$PATH:`pwd`/modulations:`pwd`/devices"
 
 ### dependencies
 
@@ -32,25 +33,88 @@ The FSK tool has dependencies to GNURadio that can be installed on Ubuntu with
 
 #### generate symbols
 
-Use the scripts available in `tpms` to generate the symbol file
+Use the scripts available in `devices` to generate the symbol file
+
+ - tpms_toyota.py
+
+```
+usage: tpms_toyota.py [-h] [-i SENSOR-ID] [-p PRESSURE] [-t TEMPERATURE]
+                      [-s STATUS]
+
+Generate Toyota TPMS symbols (differential manchester)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i SENSOR-ID, --sensor-id SENSOR-ID
+                        Sensor ID, 4 bytes id, hex string (default: fb0a43e7 )
+  -p PRESSURE, --pressure PRESSURE
+                        Pressure, PSI (default: 36.75)
+  -t TEMPERATURE, --temperature TEMPERATURE
+                        Temperature, Celcius, -40 to 215 (default: 29)
+  -s STATUS, --status STATUS
+                        Status, 8 bits unsigned integer (default: 128)
+```
+
+ - tpms_citroen.py
+
+```
+usage: tpms_citroen.py [-h] [-i SENSOR-ID] [-p PRESSURE] [-t TEMPERATURE]
+                       [-s STATUS] [-f FLAGS] [-r REPEAT] [-b BATTERY]
+
+Generate Citroen TPMS symbols (manchester)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i SENSOR-ID, --sensor-id SENSOR-ID
+                        Sensor ID, 4 bytes id, hex string (default: 8add48d4 )
+  -p PRESSURE, --pressure PRESSURE
+                        Pressure, PSI (default: 289)
+  -t TEMPERATURE, --temperature TEMPERATURE
+                        Temperature, Celcius, -50 to 205 (default: 23)
+  -s STATUS, --status STATUS
+                        Status, 8 bits unsigned integer (default: 210)
+  -f FLAGS, --flags FLAGS
+                        4 bits Flags (default: 0)
+  -r REPEAT, --repeat REPEAT
+                        Repeat counter 0 to 4 (default: 1)
+  -b BATTERY, --battery BATTERY
+                        Battery (default: 14)
+```
 
 _Example:_
 
 	tpms_toyota.py -i cafebabe -s 128 -p 40 -t 25
 
-It will create `cafebabe_128_40.0_25_tpms_toyota_manch_20k.u8` that contains the symbols for Toyota TPMS sensor.  It will also display the calculated raw payload and its corresponding differential manchester coding:
+It will create `cafebabe_128_40.0_25_tpms_toyota_diffmanch_20k.u8` that contains the symbols for Toyota TPMS sensor.  It will also display the calculated raw payload and its corresponding differential manchester coding:
+
 
 	payload = cafebabede2080430c
 	differential manchester = _1_1_1_1__1111__11_1_1__1_11_1__11__11__11__1_11_1__11__1_11_1__1_11__11__11_1__11_1__11__11_1_1_1__1_1_1_1_1_11_1_1_1_1_1_1_1_1__1_1_1_1_11__1_1_1_1_11__1_1_111
-
 
 #### generate the IQ record
 
 Use `tpms_fsk.py` tool to generate the IQ record of the FSK modulated signal.
 
+```
+Usage: tpms_fsk.py: [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -d DEVIATION, --deviation=DEVIATION
+                        Set Deviation [default=25000]
+  -s FREQUENCY_SHIFT, --frequency-shift=FREQUENCY_SHIFT
+                        Set Frequency Shift [default=0]
+  -r READ_FILE, --read-file=READ_FILE
+                        Set Symbol file [default=]
+  -w WRITE_FILE, --write-file=WRITE_FILE
+                        Set cu8 file [default=]
+  -b BAUD, --baud=BAUD  Set Baud [default=20000]
+
+```
+
 _Example:_
 
-	tpms_fsk.py -r cafebabe_128_40.0_25_tpms_toyota_manch_20k.u8 -w cafebabe_128_40.0_25_tpms_toyota_250k.cu8
+	tpms_fsk.py -r cafebabe_128_40.0_25_tpms_toyota_diffmanch_20k.u8 -w cafebabe_128_40.0_25_tpms_toyota_250k.cu8
 
 It will create `cafebabe_128_40.0_25_tpms_toyota_250k.cu8` that contains the FSK signal (25 kHz deviation, 20 kbauds).
 
