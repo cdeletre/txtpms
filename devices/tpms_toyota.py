@@ -8,6 +8,7 @@ rtl_433/src/devices/tpms_toyota.c
 from binascii import unhexlify,hexlify
 from struct import pack,unpack_from
 import argparse
+from lib.crc import crc8
 
 """
  Default values
@@ -17,6 +18,7 @@ time      : @0.214176s
 model     : Toyota       type      : TPMS          id        : fb0a43e7
 status    : 128          pressure_PSI: 36.750      temperature_C: 29.000     mic       : CRC
 """
+MODEL='Toyota'
 
 SENSORID=int('fb0a43e7',16)
 TEMPERATURE=29
@@ -26,26 +28,8 @@ STATUS=128
 # Manchester levels
 HIGH = 0xff
 LOW = HIGH ^ HIGH
-
-def crc8(message,nBytes,polynomial=0x07,init=0x00):
-
-  """
-  Port of C crc8 function from rtl_433 util
-  https://github.com/merbanan/rtl_433/blob/master/src/util.c
-  """
-
-  remainder = init
-  
-  for byte in range(nBytes):
-    remainder ^= ord(message[byte])
-    for bit in range(8):
-      if(remainder & 0x80):
-        remainder = (remainder << 1)  ^ polynomial
-      else:
-        remainder = (remainder << 1)
-    remainder = remainder & 0xff
-
-  return remainder
+MMODE='diffmanch' # diffmanch | manch
+NBYTES=9
 
 def get_payload(sensorid=SENSORID,pressure=PRESSURE,temperature=TEMPERATURE,state=STATUS):
 
@@ -92,7 +76,7 @@ def get_differential_manchester(payload):
 
   #for i,c in enumerate(payload):
   #  byte = ord(c)
-  for byte in unpack_from('<9B',payload):
+  for byte in unpack_from('<%dB' % NBYTES,payload):
     for i in range(8):
       if byte & 0x80:
         last = last ^ HIGH
@@ -132,7 +116,7 @@ def main():
 
   print( 'differential manchester = %s' % differential_manchester.replace('\xff','1').replace('\x00','_') )
 
-  iq=open('%s_%d_%s_%d_tpms_toyota_diffmanch_20k.u8' % (args.sensor_id,args.status,args.pressure,args.temperature),b'w+')
+  iq=open('%s_i%s_s%d_p%s_t%d_tpms_%s.u8' % (MODEL,args.sensor_id,args.status,args.pressure,args.temperature,MMODE),b'w+')
   iq.write(differential_manchester)
   iq.close()
 

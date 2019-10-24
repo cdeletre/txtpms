@@ -18,6 +18,8 @@ model     : Citroen      type      : TPMS          state     : d2            id 
 flags     : 0            repeat    : 1             Pressure  : 289 kPa       Temperature: 23 C         maybe_battery: 14         mic       : CHECKSUM
 """
 
+MODEL='Citroen'
+
 SENSORID=int('8add48d4',16)
 PRESSURE=289
 TEMPERATURE=23
@@ -29,10 +31,10 @@ BATTERY=14
 # Manchester levels
 HIGH = 0xff
 LOW = HIGH ^ HIGH
+MMODE='manch' # diffmanch | manch
+NBYTES=10
 
 def get_payload(sensorid=SENSORID,pressure=PRESSURE,temperature=TEMPERATURE,state=STATUS,flags=FLAGS,repeat=REPEAT,battery=BATTERY):
-
-  paylaod = ''
 
   int_payload = 0x00
 
@@ -78,7 +80,7 @@ def get_manchester(payload):
 
   #for i,c in enumerate(payload):
   #  byte = ord(c)
-  for byte in unpack_from('<10B',payload):
+  for byte in unpack_from('<%dB' % NBYTES,payload):
     for i in range(8):
       if byte & 0x80:
         manchester += pack('<2B', HIGH, LOW)
@@ -126,7 +128,7 @@ def main():
 
   print( 'manchester = %s' % manchester.replace('\xff','1').replace('\x00','_') )
 
-  iq=open('%s_%s_%d_%d_tpms_citroen_manch_20k.u8' % (args.sensor_id,args.pressure,args.temperature,args.status),b'w+')
+  iq=open('%s_i%s_p%s_t%d_s%d_f%s_r%d_b%d_tpms_%s.u8' % (MODEL,args.sensor_id,args.pressure,args.temperature,args.status,hex(args.flags),args.repeat,args.battery,MMODE),b'w+')
   iq.write(manchester)
   iq.close()
 

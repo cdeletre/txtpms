@@ -6,10 +6,12 @@
 
 ### supported sensors
 
-At the moment two sensors are supported:
+At the moment following sensors are supported:
 
  - **Toyota** FSK 9-byte Differential Manchester encoded TPMS data with CRC-8. Pacific Industries Co.Ltd. PMV-C210 (`rtl_433/src/devices/tpms_toyota.c`)
- - **Citroen** FSK 10 byte Manchester encoded checksummed TPMS data. Also Peugeot and likely Fiat, Mitsubishi, VDO-types (`rtl_433/src/devices/tpms_citroen.c`)
+ - **Citroën** FSK 10 byte Manchester encoded checksummed TPMS data. Also Peugeot and likely Fiat, Mitsubishi, VDO-types (`rtl_433/src/devices/tpms_citroen.c`)
+ - **Renault** FSK 9 byte Manchester encoded TPMS with CRC. Seen on Renault Clio, Renault Captur and maybe Dacia Sandero (`rtl_433/src/devices/tpms_renault.c`)
+ - **Ford** FSK 8 byte Manchester encoded TPMS with simple checksum. Seen on Ford Fiesta, Focus. (`rtl_433/src/devices/tpms_ford.c`)
 
 ### installation
 
@@ -81,11 +83,31 @@ optional arguments:
                         Battery (default: 14)
 ```
 
+ - tpms_ford.py
+
+```
+usage: tpms_ford.py [-h] [-i SENSOR-ID] [-p PRESSURE] [-t TEMPERATURE]
+                    [-f FLAGS]
+
+Generate Renault TPMS symbols (manchester)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i SENSOR-ID, --sensor-id SENSOR-ID
+                        Sensor ID, 4 bytes id, hex string (default: 6ad446 )
+  -p PRESSURE, --pressure PRESSURE
+                        RAW pressure (default: 0x6a)
+  -t TEMPERATURE, --temperature TEMPERATURE
+                        RAW temperature (default: 0xd4)
+  -f FLAGS, --flags FLAGS
+                        RAW flags (default: 0x46)
+```
+
 _Example:_
 
 	tpms_toyota.py -i cafebabe -s 128 -p 40 -t 25
 
-It will create `cafebabe_128_40.0_25_tpms_toyota_diffmanch_20k.u8` that contains the symbols for Toyota TPMS sensor.  It will also display the calculated raw payload and its corresponding differential manchester coding:
+It will create `Toyota_icafebabe_s128_p40.0_t25_tpms_diffmanch.u8` that contains the symbols for Toyota TPMS sensor.  It will also display the calculated raw payload and its corresponding differential manchester coding:
 
 
 	payload = cafebabede2080430c
@@ -114,15 +136,15 @@ Options:
 
 _Example:_
 
-	tpms_fsk.py -r cafebabe_128_40.0_25_tpms_toyota_diffmanch_20k.u8 -w cafebabe_128_40.0_25_tpms_toyota_250k.cu8
+	tpms_fsk.py -r Toyota_icafebabe_s128_p40.0_t25_tpms_diffmanch.u8 -w Toyota_icafebabe_s128_p40.0_t25_tpms_250k.u8
 
-It will create `cafebabe_128_40.0_25_tpms_toyota_250k.cu8` that contains the FSK signal (25 kHz deviation, 20 kbauds).
+It will create `Toyota_icafebabe_s128_p40.0_t25_tpms_250k.u8` that contains the FSK signal (25 kHz deviation, 20 kbauds).
 
 #### test with rtl\_433
 
 You can test the simulated tpms sensors with [**rtl_433**](https://github.com/merbanan/rtl_433). To do so you need to add dummy signal `txtpms/iq/zero_1s_250k.cu8` before and after the generated record to let the trigger of rtl\_433 have the time to wake-up:
 
-	cat ./iq/zero_1s_250k.cu8 cafebabe_128_40.0_25_tpms_toyota_250k.cu8 ./iq/zero_1s_250k.cu8 > simu_tpms.cu8
+	cat ./iq/zero_1s_250k.cu8 Toyota_icafebabe_s128_p40.0_t25_tpms_250k.u8 ./iq/zero_1s_250k.cu8 > simu_tpms.cu8
 	rtl_433 -r simu_tpms.cu8
 
 It should output the following decoding:
