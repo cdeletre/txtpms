@@ -55,6 +55,9 @@ optional arguments:
                         Temperature, Celcius, -40 to 215 (default: 29)
   -s STATUS, --status STATUS
                         Status, 8 bits unsigned integer (default: 128)
+  -o OUTPUT-FILE, --output-file OUTPUT-FILE
+                        Output file. Will be automatically genereated if not
+                        provided
 ```
 
  - tpms_citroen.py
@@ -81,6 +84,34 @@ optional arguments:
                         Repeat counter 0 to 4 (default: 1)
   -b BATTERY, --battery BATTERY
                         Battery (default: 14)
+  -o OUTPUT-FILE, --output-file OUTPUT-FILE
+                        Output file. Will be automatically genereated if not
+                        provided
+```
+
+ - tpms_renault.py
+
+```
+usage: tpms_renault.py [-h] [-i SENSOR-ID] [-p PRESSURE] [-t TEMPERATURE]
+                       [-f FLAGS] [-u UNKNOWN] [-o OUTPUT-FILE]
+
+Generate Renault TPMS symbols (manchester)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i SENSOR-ID, --sensor-id SENSOR-ID
+                        Sensor ID, 4 bytes id, hex string (default: 87f293 )
+  -p PRESSURE, --pressure PRESSURE
+                        Pressure, PSI (default: 202.5)
+  -t TEMPERATURE, --temperature TEMPERATURE
+                        Temperature, Celcius, -50 to 205 (default: 25)
+  -f FLAGS, --flags FLAGS
+                        6 bits Flags (default: 52)
+  -u UNKNOWN, --unknown UNKNOWN
+                        2 bytes Unknown (default: 65535)
+  -o OUTPUT-FILE, --output-file OUTPUT-FILE
+                        Output file. Will be automatically genereated if not
+                        provided
 ```
 
  - tpms_ford.py
@@ -101,6 +132,9 @@ optional arguments:
                         RAW temperature (default: 0xd4)
   -f FLAGS, --flags FLAGS
                         RAW flags (default: 0x46)
+  -o OUTPUT-FILE, --output-file OUTPUT-FILE
+                        Output file. Will be automatically genereated if not
+                        provided
 ```
 
 _Example:_
@@ -142,9 +176,11 @@ It will create `Toyota_icafebabe_s128_p40.0_t25_tpms_250k.cu8` that contains the
 
 #### test with rtl\_433
 
-You can test the simulated tpms sensors with [**rtl_433**](https://github.com/merbanan/rtl_433). To do so you need to add dummy signal `txtpms/iq/zero_1s_250k.cu8` before and after the generated record to let the trigger of rtl\_433 have the time to wake-up:
+You can test the simulated tpms sensors with [**rtl_433**](https://github.com/merbanan/rtl_433). To do so you need to add dummy signal before and after the generated record to let the trigger of rtl\_433 have the time to wake-up:
 
-	cat ./iq/zero_1s_250k.cu8 Toyota_icafebabe_s128_p40.0_t25_tpms_250k.cu8 ./iq/zero_1s_250k.cu8 > simu_tpms.cu8
+	dd bs=5000 count=1 if=/dev/zero | sox -t raw -v 0 -c2 -b8 -eunsigned-integer -r 250k - -t raw - >> simu_tpms.cu8
+	cat Toyota_icafebabe_s128_p40.0_t25_tpms_250k.cu8 >> simu_tpms.cu8
+	dd bs=5000 count=1 if=/dev/zero | sox -t raw -v 0 -c2 -b8 -eunsigned-integer -r 250k - -t raw - >> simu_tpms.cu8
 	rtl_433 -r simu_tpms.cu8
 
 It should output the following decoding:
