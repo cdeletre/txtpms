@@ -107,7 +107,17 @@ def main():
   parser.add_argument('-u','--unknown',metavar='UNKNOWN',default=UNKNOWN,type=int,
                       help='2 bytes Unknown (default: %d)' % UNKNOWN )
 
+  parser.add_argument('-o','--output-file',metavar='OUTPUT-FILE',
+                      help='Output file. Will be automatically genereated if not provided')
+
   args = parser.parse_args()
+
+  output_file = ''
+
+  if args.output_file is None:
+    output_file = '%s_i%s_p%s_t%d_f%s_u%s_tpms_%s.u8' % (MODEL,args.sensor_id,args.pressure,args.temperature,hex(args.flags),hex(args.unknown),MMODE)
+  else:
+    output_file = args.output_file
 
   payload = get_payload(int(args.sensor_id,16),args.pressure,args.temperature,args.flags,args.unknown)
 
@@ -117,9 +127,11 @@ def main():
 
   print( 'manchester = %s' % manchester.replace('\xff','1').replace('\x00','_') )
 
-  iq=open('%s_i%s_p%s_t%d_f%s_u%s_tpms_%s.u8' % (MODEL,args.sensor_id,args.pressure,args.temperature,hex(args.flags),hex(args.unknown),MMODE),b'w+')
-  iq.write(manchester)
-  iq.close()
+  signal=open(output_file,b'w+')
+  signal.write(manchester)
+  signal.close()
+
+  print('signal written to %s' % output_file)
 
 if __name__ == '__main__':
     exit(main())

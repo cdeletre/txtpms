@@ -106,7 +106,17 @@ def main():
   parser.add_argument('-s','--status',metavar='STATUS',default=STATUS,type=int,
                       help='Status, 8 bits unsigned integer (default: %d)' % STATUS)
 
+  parser.add_argument('-o','--output-file',metavar='OUTPUT-FILE',
+                      help='Output file. Will be automatically genereated if not provided')
+
   args = parser.parse_args()
+
+  output_file = ''
+
+  if args.output_file is None:
+    output_file = '%s_i%s_s%d_p%s_t%d_tpms_%s.u8' % (MODEL,args.sensor_id,args.status,args.pressure,args.temperature,MMODE)
+  else:
+    output_file = args.output_file
 
   payload = get_payload(int(args.sensor_id,16),args.pressure,args.temperature,args.status)
 
@@ -116,9 +126,11 @@ def main():
 
   print( 'differential manchester = %s' % differential_manchester.replace('\xff','1').replace('\x00','_') )
 
-  iq=open('%s_i%s_s%d_p%s_t%d_tpms_%s.u8' % (MODEL,args.sensor_id,args.status,args.pressure,args.temperature,MMODE),b'w+')
-  iq.write(differential_manchester)
-  iq.close()
+  signal=open(output_file,b'w+')
+  signal.write(differential_manchester)
+  signal.close()
+
+  print('signal written to %s' % output_file)
 
 if __name__ == '__main__':
     exit(main())
