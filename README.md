@@ -136,15 +136,15 @@ Options:
 
 _Example:_
 
-	tpms_fsk.py -r Toyota_icafebabe_s128_p40.0_t25_tpms_diffmanch.u8 -w Toyota_icafebabe_s128_p40.0_t25_tpms_250k.u8
+	tpms_fsk.py -r Toyota_icafebabe_s128_p40.0_t25_tpms_diffmanch.u8 -w Toyota_icafebabe_s128_p40.0_t25_tpms_250k.cu8
 
-It will create `Toyota_icafebabe_s128_p40.0_t25_tpms_250k.u8` that contains the FSK signal (25 kHz deviation, 20 kbauds).
+It will create `Toyota_icafebabe_s128_p40.0_t25_tpms_250k.cu8` that contains the FSK signal (25 kHz deviation, 20 kbauds).
 
 #### test with rtl\_433
 
 You can test the simulated tpms sensors with [**rtl_433**](https://github.com/merbanan/rtl_433). To do so you need to add dummy signal `txtpms/iq/zero_1s_250k.cu8` before and after the generated record to let the trigger of rtl\_433 have the time to wake-up:
 
-	cat ./iq/zero_1s_250k.cu8 Toyota_icafebabe_s128_p40.0_t25_tpms_250k.u8 ./iq/zero_1s_250k.cu8 > simu_tpms.cu8
+	cat ./iq/zero_1s_250k.cu8 Toyota_icafebabe_s128_p40.0_t25_tpms_250k.cu8 ./iq/zero_1s_250k.cu8 > simu_tpms.cu8
 	rtl_433 -r simu_tpms.cu8
 
 It should output the following decoding:
