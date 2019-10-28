@@ -178,7 +178,7 @@ It will create `Toyota_icafebabe_s128_p40.0_t25_tpms_250k.cu8` that contains the
 
 You can test the simulated tpms sensors with [**rtl_433**](https://github.com/merbanan/rtl_433). To do so you need to add dummy signal before and after the generated record to let the trigger of rtl\_433 have the time to wake-up:
 
-	dd bs=5000 count=1 if=/dev/zero | sox -t raw -v 0 -c2 -b8 -eunsigned-integer -r 250k - -t raw - >> simu_tpms.cu8
+	dd bs=5000 count=1 if=/dev/zero | sox -t raw -v 0 -c2 -b8 -eunsigned-integer -r 250k - -t raw - > simu_tpms.cu8
 	cat Toyota_icafebabe_s128_p40.0_t25_tpms_250k.cu8 >> simu_tpms.cu8
 	dd bs=5000 count=1 if=/dev/zero | sox -t raw -v 0 -c2 -b8 -eunsigned-integer -r 250k - -t raw - >> simu_tpms.cu8
 	rtl_433 -r simu_tpms.cu8
