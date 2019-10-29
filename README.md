@@ -186,7 +186,7 @@ You can test the simulated tpms sensors with [**rtl_433**](https://github.com/me
 It should output the following decoding:
 
 	_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-	time      : @1.000000s
+	time      : @0.010000s
 	model     : Toyota       type      : TPMS          id        : cafebabe
 	status    : 128          pressure_PSI: 40.000      temperature_C: 25.000     mic       : CRC
 
