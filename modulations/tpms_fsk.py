@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Tpms Fsk
-# Generated: Thu Oct 24 03:30:13 2019
+# Generated: Mon Feb 10 04:44:10 2020
 ##################################################
 
 
@@ -20,17 +20,18 @@ import pmt
 
 class tpms_fsk(gr.top_block):
 
-    def __init__(self, deviation=25000, frequency_shift=0, read_file='', write_file='', baud=20000):
+    def __init__(self, baud=20000, deviation=25000, frequency_shift=0, read_file='', write_file='', interpolate=1):
         gr.top_block.__init__(self, "Tpms Fsk")
 
         ##################################################
         # Parameters
         ##################################################
+        self.baud = baud
         self.deviation = deviation
         self.frequency_shift = frequency_shift
         self.read_file = read_file
         self.write_file = write_file
-        self.baud = baud
+        self.interpolate = interpolate
 
         ##################################################
         # Variables
@@ -42,6 +43,12 @@ class tpms_fsk(gr.top_block):
         ##################################################
         # Blocks
         ##################################################
+        self.rational_resampler_xxx_0 = filter.rational_resampler_ccc(
+                interpolation=interpolate,
+                decimation=1,
+                taps=None,
+                fractional_bw=None,
+        )
         self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_ccc(1, (1, ), frequency_shift, samp_rate)
         self.blocks_uchar_to_float_0 = blocks.uchar_to_float()
         self.blocks_streams_to_stream_0 = blocks.streams_to_stream(gr.sizeof_char*1, 2)
@@ -81,7 +88,15 @@ class tpms_fsk(gr.top_block):
         self.connect((self.blocks_repeat_0, 0), (self.analog_frequency_modulator_fc_0, 0))
         self.connect((self.blocks_streams_to_stream_0, 0), (self.blocks_file_sink_0_0, 0))
         self.connect((self.blocks_uchar_to_float_0, 0), (self.blocks_multiply_const_vxx_0, 0))
-        self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.blocks_complex_to_float_0, 0))
+        self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.rational_resampler_xxx_0, 0))
+        self.connect((self.rational_resampler_xxx_0, 0), (self.blocks_complex_to_float_0, 0))
+
+    def get_baud(self):
+        return self.baud
+
+    def set_baud(self, baud):
+        self.baud = baud
+        self.set_samp_per_symbol(self.samp_rate/self.baud)
 
     def get_deviation(self):
         return self.deviation
@@ -111,12 +126,11 @@ class tpms_fsk(gr.top_block):
         self.write_file = write_file
         self.blocks_file_sink_0_0.open(self.write_file)
 
-    def get_baud(self):
-        return self.baud
+    def get_interpolate(self):
+        return self.interpolate
 
-    def set_baud(self, baud):
-        self.baud = baud
-        self.set_samp_per_symbol(self.samp_rate/self.baud)
+    def set_interpolate(self, interpolate):
+        self.interpolate = interpolate
 
     def get_samp_rate(self):
         return self.samp_rate
@@ -144,6 +158,9 @@ class tpms_fsk(gr.top_block):
 def argument_parser():
     parser = OptionParser(usage="%prog: [options]", option_class=eng_option)
     parser.add_option(
+        "-b", "--baud", dest="baud", type="intx", default=20000,
+        help="Set Baud [default=%default]")
+    parser.add_option(
         "-d", "--deviation", dest="deviation", type="intx", default=25000,
         help="Set Deviation [default=%default]")
     parser.add_option(
@@ -156,8 +173,8 @@ def argument_parser():
         "-w", "--write-file", dest="write_file", type="string", default='',
         help="Set cu8 file [default=%default]")
     parser.add_option(
-        "-b", "--baud", dest="baud", type="intx", default=20000,
-        help="Set Baud [default=%default]")
+        "-i", "--interpolate", dest="interpolate", type="intx", default=1,
+        help="Set Interpolate [default=%default]")
     return parser
 
 
@@ -165,7 +182,7 @@ def main(top_block_cls=tpms_fsk, options=None):
     if options is None:
         options, _ = argument_parser().parse_args()
 
-    tb = top_block_cls(deviation=options.deviation, frequency_shift=options.frequency_shift, read_file=options.read_file, write_file=options.write_file, baud=options.baud)
+    tb = top_block_cls(baud=options.baud, deviation=options.deviation, frequency_shift=options.frequency_shift, read_file=options.read_file, write_file=options.write_file, interpolate=options.interpolate)
     tb.start()
     tb.wait()
 

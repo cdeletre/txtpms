@@ -31,6 +31,10 @@ The FSK tool has dependencies to GNURadio that can be installed on Ubuntu with
 
 	apt-get install gnuradio
 
+You will also need SoX
+
+	apt-get install sox
+
 ### usage
 
 #### generate symbols
@@ -156,6 +160,7 @@ Usage: tpms_fsk.py: [options]
 
 Options:
   -h, --help            show this help message and exit
+  -b BAUD, --baud=BAUD  Set Baud [default=20000]
   -d DEVIATION, --deviation=DEVIATION
                         Set Deviation [default=25000]
   -s FREQUENCY_SHIFT, --frequency-shift=FREQUENCY_SHIFT
@@ -164,8 +169,8 @@ Options:
                         Set Symbol file [default=]
   -w WRITE_FILE, --write-file=WRITE_FILE
                         Set cu8 file [default=]
-  -b BAUD, --baud=BAUD  Set Baud [default=20000]
-
+  -i INTERPOLATE, --interpolate=INTERPOLATE
+                        Set Interpolate [default=1]
 ```
 
 _Example:_
@@ -197,3 +202,27 @@ The signal can be analyzed with [**inspectrum**](https://github.com/miek/inspect
 	inspectrum simu_tpms.cu8
 
 ![inspectrum](https://raw.githubusercontent.com/cdeletre/txtpms/master/pics/inspectrum.png)
+
+#### transmit with HackRF One
+
+**/!\\** **Radio transmission may be subject to local rules in your country. Check before transmitting that you are allowed to do it.** **/!\\**
+
+In the case you want to transmit the signal with HackRF I suggest you to use a higher sample rate (default is 250 ksps). To do so use the `-i` option of `tpms_fsk.py` tool:
+
+	tpms_fsk.py -i 10 -r Toyota_icafebabe_s128_p40.0_t25_tpms_diffmanch.u8 -w Toyota_icafebabe_s128_p40.0_t25_tpms_2500k.cu8
+	
+It will create `Toyota_icafebabe_s128_p40.0_t25_tpms_2500k.cu8` with a **2.5 Msps** sample rate that contains the FSK signal (25 kHz deviation, 20 kbauds).
+
+Now we need to create a file with the *Complex Signed Integer* format that is used by `hackrf_transfer` :
+
+	dd bs=5000000 count=1 if=/dev/zero | sox -t raw -v 0 -c2 -b8 -esigned-integer -r 2500k - -t raw - > simu_tpms_2500k.cs8 #insert 1000 ms silence at the beginning
+	sox -t raw -c2 -b8 -eunsigned-integer -r 2500k Toyota_icafebabe_s128_p40.0_t25_tpms_2500k.cu8 -t raw -esigned-integer - >> simu_tpms_2500k.cs8
+	dd bs=500000 count=1 if=/dev/zero | sox -t raw -v 0 -c2 -b8 -esigned-integer -r 2500k - -t raw - >> simu_tpms_2500k.cs8 #insert 100 ms silence a the end
+
+Transmit is done with the following command:
+
+	hackrf_transfer -R -t simu_tpms_2500k.cs8 -f 433920000 -s 2500000 -x 0
+
+It will undefinitly repeat the transmit with the centered frequency 433.92 MHz and a TX gain 0.
+
+**/!\\** **Radio transmission may be subject to local rules in your country. Check before transmitting that you are allowed to do it.** **/!\\**
